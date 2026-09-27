@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тестовые новости для бота</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .form-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        button.secondary {
+            background: #2196F3;
+        }
+        
+        button.secondary:hover {
+            background: #0b7dda;
+        }
+        
+        button.danger {
+            background: #f44336;
+        }
+        
+        button.danger:hover {
+            background: #da190b;
+        }
+        
+        .news-list {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .news-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+        
+        .news-item:last-child {
+            border-bottom: none;
+        }
+        
+        .news-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .news-description {
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .news-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .news-category {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+        
+        .stats {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .export-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+        
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>📰 Тестовый новостной сайт</h1>
+    
+    <div class="stats">
+        <strong>Всего новостей:</strong> <span id="newsCount">0</span> | 
+        <strong>Последнее обновление:</strong> <span id="lastUpdate">-</span>
+    </div>
+
+    <div class="form-section">
+        <h2>Добавить новость</h2>
+        <form id="newsForm">
+            <div class="form-group">
+                <label for="title">Заголовок:</label>
+                <input type="text" id="title" required placeholder="Введите заголовок новости">
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Описание:</label>
+                <textarea id="description" required placeholder="Краткое описание новости"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="category">Категория:</label>
+                <select id="category">
+                    <option value="general">Главные новости</option>
+                    <option value="tech">Технологии</option>
+                    <option value="business">Бизнес</option>
+                    <option value="science">Наука</option>
+                    <option value="sports">Спорт</option>
+                </select>
+            </div>
+            
+            <button type="submit">Опубликовать</button>
+            <button type="button" class="secondary" onclick="generateRandom()">🎲 Случайная новость</button>
+            <button type="button" class="danger" onclick="clearAll()"> Очистить все</button>
+        </form>
+    </div>
+
+    <div class="news-list">
+        <h2>Последние новости</h2>
+        <div id="newsContainer"></div>
+        
+        <div class="export-section">
+            <h3>Экспорт данных для бота</h3>
+            <button onclick="exportJSON()"> Скачать JSON</button>
+            <button onclick="copyJSON()">📋 Копировать JSON</button>
+            <pre id="jsonOutput"></pre>
+        </div>
+    </div>
+
+    <script>
+        // Хранилище новостей
+        let news = JSON.parse(localStorage.getItem('testNews') || '[]');
+        
+        // Случайные данные для генерации
+        const randomTitles = [
+            "Ученые обнаружили новый вид бактерий в глубинах океана",
+            "Крупная технологическая компания анонсировала революционный продукт",
+            "Фондовый рынок показал рекордный рост за квартал",
+            "Новый спортивный рекорд установлен на чемпионате мира",
+            "Исследователи разработали метод борьбы с изменением климата",
+            "Стартап привлек $50 млн инвестиций для развития AI-технологий",
+            "Обнаружена новая экзопланета в обитаемой зоне",
+            "Криптовалюта достигла исторического максимума",
+            "Новый закон вступит в силу с следующего месяца",
+            "Международная конференция по искусственному интеллекту открылась"
+        ];
+        
+        const randomDescriptions = [
+            "Это событие может изменить наше понимание мира и открыть новые возможности для развития науки и технологий.",
+            "Эксперты считают, что данное достижение станет важным шагом вперед в соответствующей области.",
+            "Аналитики прогнозируют значительное влияние этого события на рынок в ближайшие месяцы.",
+            "Представители отрасли высоко оценили данное достижение и назвали его прорывным.",
+            "Новость вызвала широкий резонанс в профессиональном сообществе и среди общественности."
+        ];
+        
+        const categories = ['general', 'tech', 'business', 'science', 'sports'];
+        
+        // Добавление новости
+        document.getElementById('newsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const category = document.getElementById('category').value;
+            
+            addNews(title, description, category);
+            
+            // Очистка формы
+            document.getElementById('title').value = '';
+            document.getElementById('description').value = '';
+        });
+        
+        function addNews(title, description, category) {
+            const newsItem = {
+                id: Date.now(),
+                title: title,
+                description: description,
+                category: category,
+                url: window.location.href + '#news-' + Date.now(),
+                published_at: new Date().toISOString(),
+                created_at: new Date().toISOString()
+            };
+            
+            news.unshift(newsItem);
+            saveNews();
+            renderNews();
+            updateStats();
+        }
+        
+        function generateRandom() {
+            const title = randomTitles[Math.floor(Math.random() * randomTitles.length)];
+            const description = randomDescriptions[Math.floor(Math.random() * randomDescriptions.length)];
+            const category = categories[Math.floor(Math.random() * categories.length)];
+            
+            addNews(title, description, category);
+        }
+        
+        function clearAll() {
+            if (confirm('Вы уверены, что хотите удалить все новости?')) {
+                news = [];
+                saveNews();
+                renderNews();
+                updateStats();
+            }
+        }
+        
+        function saveNews() {
+            localStorage.setItem('testNews', JSON.stringify(news));
+        }
+        
+        function renderNews() {
+            const container = document.getElementById('newsContainer');
+            
+            if (news.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Новостей пока нет. Добавьте первую!</p>';
+                return;
+            }
+            
+            container.innerHTML = news.map(item => `
+                <article class="news-item" data-id="${escapeHtml(item.id)}" data-date="${escapeHtml(item.published_at)}">
+                    <h3 class="news-title">${escapeHtml(item.title)}</h3>
+                    <p class="news-description">${escapeHtml(item.description)}</p>
+                    <div class="news-meta">
+                        <span class="news-category">${escapeHtml(getCategoryName(item.category))}</span>
+                        <time class="news-date">${formatDate(item.published_at)}</time>
+                        <span class="news-url">ID: ${item.id}</span>
+                    </div>
+                </article>
+            `).join('');
+        }
+        
+        function updateStats() {
+            document.getElementById('newsCount').textContent = news.length;
+            document.getElementById('lastUpdate').textContent = news.length > 0 
+                ? formatDate(news[0].published_at) 
+                : '-';
+        }
+        
+        function exportJSON() {
+            const dataStr = JSON.stringify(news, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'news_' + Date.now() + '.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function copyJSON() {
+            const json = JSON.stringify(news, null, 2);
+            navigator.clipboard.writeText(json).then(() => {
+                alert('JSON скопирован в буфер обмена!');
+            });
+            document.getElementById('jsonOutput').textContent = json;
+        }
+        
+        function escapeHtml(text) {
+            return String(text ?? '').replace(/[&<>"']/g, (ch) => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[ch]));
+        }
+        
+        function getCategoryName(category) {
+            const names = {
+                'general': 'Главные новости',
+                'tech': 'Технологии',
+                'business': 'Бизнес',
+                'science': 'Наука',
+                'sports': 'Спорт'
+            };
+            return names[category] || category;
+        }
+        
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        // Инициализация
+        renderNews();
+        updateStats();
+    </script>
+</body>
+</html>
