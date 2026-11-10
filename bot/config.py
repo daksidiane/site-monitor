@@ -68,7 +68,7 @@ def load_settings() -> Settings:
         ).strip().rstrip("/"),
         admin_telegram_ids=_parse_admin_ids(os.getenv("ADMIN_TELEGRAM_IDS", "")),
         system_prompt_path=ROOT_DIR / "system_prompt.md",
-        sources_json_path=ROOT_DIR / "Qwen_json_20260912_kglt6494b.json",
+        sources_json_path=ROOT_DIR / "data" / "sources.json",
         db_path=data_dir / "news.db",
         monitor_interval_seconds=max(
             60, int(os.getenv("MONITOR_INTERVAL_SECONDS", "600") or "600")

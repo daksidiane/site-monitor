@@ -44,7 +44,7 @@ class LLMClient:
                 max_tokens=900,
             )
         except Exception as exc:
-            logger.error("ProxyAPI error: %s", redact_secrets(str(exc)))
+            logger.error("Ошибка сервиса выжимок: %s", redact_secrets(str(exc)))
             raise
 
         choice = response.choices[0].message
